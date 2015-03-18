@@ -1,0 +1,80 @@
+#!/usr/bin/env python
+
+# -*- coding: utf-8 -*-
+# Script to scrape casualty table from UN website
+# and place in google spreadsheet
+
+import sys
+import requests
+import csv
+import datetime as dt
+
+from BeautifulSoup import BeautifulSoup
+
+ENCODING = 'utf-8'
+
+# Fetch arguments from command line.
+if __name__ == '__main__':
+	if len(sys.argv) <= 1:
+		usage = '''
+		Please provide a CSV path.
+
+		./scrape {path/to/file.csv}
+
+		e.g.
+
+		./scrape data.csv
+		'''
+		print(usage)
+		sys.exit(1)
+
+	csv_path = sys.argv[1]
+
+months = {
+	'January': '01',
+	'February': '02',
+	'March': '03',
+	'April': '04',
+	'May': '05',
+	'June': '06',
+	'July': '07',
+	'August': '08',
+	'September': '09',
+	'October': '10',
+	'November': '11',
+	'December': '12'
+}
+
+# Get list of datasets form HDX.
+def getUNData(csv_path=None):
+	if csv_path:
+		url = 'http://www.uniraq.org/index.php?option=com_k2&view=item&id=3344:un-casualty-figures-for-february-2015&Itemid=633&lang=en'
+		extra = ['source', 'methodology', 'utc_created', 'location', 'caveats', 'comments']
+		r = requests.get(url)
+		soup = BeautifulSoup(r.text)
+		f = csv.writer(open(csv_path, "wb+"))
+
+		for table in soup.findAll('table'):
+			first_row = table.findNext('tr')
+
+			if 'Month' in str(first_row.findNext('td')):
+				rows = table.findAll('tr')[1:]
+				tds = first_row.findAll('td')
+				headers = [td.findChildren(text=True)[0] for td in tds]
+				headers.extend(extra)
+				f.writerow(['Date'] + headers[1:])
+
+			for tr in rows:
+				row = [td.findChildren(text=True)[0] for td in tr.findAll('td')]
+				split = row[0].split(' ')
+				extra_data = [url, 'BeautifulSoup', str(dt.datetime.utcnow()), 'location', 'caveats', 'comments']
+				row[0] = '%s/%s' % (split[1], months[split[0]])
+				row.extend(extra_data)
+				f.writerow(row)
+
+	else:
+		print 'Please provide a csv path.'
+		return
+
+# Running the function.
+getUNData(csv_path)

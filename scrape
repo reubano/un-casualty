@@ -54,6 +54,9 @@ def getUNData(csv_path=None):
 		soup = BeautifulSoup(r.text)
 		f = csv.writer(open(csv_path, "wb+"))
 
+		intro = soup.find("div", {"class": "itemIntroText"}).find('p').findChildren(text=True)[0]
+		location = intro.split(',')[0]
+
 		for table in soup.findAll('table'):
 			first_row = table.findNext('tr')
 
@@ -67,7 +70,7 @@ def getUNData(csv_path=None):
 			for tr in rows:
 				row = [td.findChildren(text=True)[0] for td in tr.findAll('td')]
 				split = row[0].split(' ')
-				extra_data = [url, 'BeautifulSoup', str(dt.datetime.utcnow()), 'location', 'caveats', 'comments']
+				extra_data = [url, 'BeautifulSoup', str(dt.datetime.utcnow()), location, 'caveats', 'comments']
 				row[0] = '%s/%s' % (split[1], months[split[0]])
 				row.extend(extra_data)
 				f.writerow(row)

@@ -54,8 +54,8 @@ def getUNData(csv_path=None):
 		soup = BeautifulSoup(r.text)
 		f = csv.writer(open(csv_path, "wb+"))
 
-		intro = soup.find("div", {"class": "itemIntroText"}).find('p').findChildren(text=True)[0]
-		location = intro.split(',')[0]
+		intro = soup.find("div", {"class": "itemIntroText"}).find('p')
+		location = intro.findChildren(text=True)[0].split(',')[0]
 		full_text = soup.find("div", {"class": "itemFullText"})
 		caveats = full_text.find('strong').findParent().text[9:]
 

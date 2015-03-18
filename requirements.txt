@@ -1,0 +1,4 @@
+requests==2.4.3
+termcolor==1.1.0
+unicodecsv==0.9.4
+yajl==0.3.5
